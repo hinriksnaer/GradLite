@@ -1,4 +1,4 @@
-class Tensor:
+class Parameter:
     
     def __init__(self, data, _children=(), _op=''):
         self.data = data
@@ -9,8 +9,8 @@ class Tensor:
         self._op = _op
 
     def __add__(self, other):
-        other = other if isinstance(other, Tensor) else Tensor(other)
-        out = Tensor(self.data + other.data, (self, other), '+')
+        other = other if isinstance(other, Parameter) else Parameter(other)
+        out = Parameter(self.data + other.data, (self, other), '+')
 
         def _backward():
             self.grad += out.grad
@@ -21,8 +21,8 @@ class Tensor:
         return out
 
     def __mul__(self, other):
-        other = other if isinstance(other, Tensor) else Tensor(other)
-        out = Tensor(self.data * other.data, (self, other), '*')
+        other = other if isinstance(other, Parameter) else Parameter(other)
+        out = Parameter(self.data * other.data, (self, other), '*')
 
         def _backward():
             self.grad += other.data * out.grad
@@ -35,7 +35,7 @@ class Tensor:
     def __pow__(self, other):
         assert isinstance(other, (int, float)), 'Only support int/float powers'
 
-        out = Tensor(self.data ** other, (self,), f'**{other}')
+        out = Parameter(self.data ** other, (self,), f'**{other}')
 
         def _backward():
             self.grad += other * (self.data ** (other - 1)) * out.grad
@@ -67,7 +67,7 @@ class Tensor:
         return other * self**-1
 
     def relu(self):
-        out = Tensor(0 if self.data < 0 else self.data, (self,), 'ReLU')
+        out = Parameter(0 if self.data < 0 else self.data, (self,), 'ReLU')
 
         def _backward():
             self.grad += (out.data > 0) * out.grad
@@ -95,5 +95,5 @@ class Tensor:
             v._backward()
 
     def __repr__(self):
-        return f'Tensor(data={self.data}, grad={self.grad})'
+        return f'Parameter(data={self.data}, grad={self.grad})'
 
